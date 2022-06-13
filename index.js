@@ -7,6 +7,7 @@ const client = new MongoClient(uri)
 const express = require('express')
 const app = express()
 const port = process.env.PORT || 80
+app.use(express.static('static'))
 
 let arr
 
@@ -17,14 +18,14 @@ async function run() {
     arr = await getStats()
 
     app.listen(port, () => { //Listener
-        console.log(`Listeing on http://localhost:${port}`)
+        console.log(`Listeing on https://flairchangebot-api.herokuapp.com/:${port}`)
     })
 }
 
 //Handler for GET /stats
 app.get('/stats', async(req, res) => {
     try {
-        console.log('Answering request for:\t/stats')
+        console.log('Answering request for: /stats')
         res.send(arr)
     } catch (err) {
         console.log(err)
