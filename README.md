@@ -4,18 +4,14 @@ An API returning data gathered and processed by flairchange_bot.
 # Endpoint
 
 `GET /stats`  
-Returns an array of JSON objects containing the flair statistics of r/PoliticalCompassMemes. Each object represents a flair and is composed of two fields: `flair` and `num`.  
+Returns a JSON object containing the flair statistics of r/PoliticalCompassMemes. It is composed of key-value pairs, composed by a flair and the number of users having such flair.
 ## Example
-`[{`  
-&emsp;`"flair": "Centrist"`  
-&emsp;`"num": "20"`  
-`},`
 `{`  
-&emsp;`"flair": "GreyCentrist"`  
-&emsp;`"num": "40"`  
-`}]`
+&emsp;`"Centrist": "20",`  
+&emsp;`"GreyCentrist": "40"`  
+`}`
 
 
 
 # Access
-At the moment the app does not feature any access measure. Instead, as a security precaution, the data is only loaded once per app lifecycle. Any database occurring during the app lifecycle will only be displayed on the next lifecylce.
+At the moment the app does not feature any access measure. Instead, as a security precaution, the data is only loaded once per app lifecycle. Any database update occurring during the app's lifecycle will only be displayed on the next lifecylce.

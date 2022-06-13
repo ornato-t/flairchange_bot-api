@@ -9,13 +9,13 @@ const app = express()
 const port = process.env.PORT || 80
 app.use(express.static('static'))
 
-let arr
+let obj
 
 run()
 
 //Main function
 async function run() {
-    arr = await getStats()
+    obj = await getStats()
 
     app.listen(port, () => { //Listener
         console.log(`Listeing on https://flairchangebot-api.herokuapp.com/:${port}`)
@@ -26,7 +26,7 @@ async function run() {
 app.get('/stats', async(req, res) => {
     try {
         console.log('Answering request for: /stats')
-        res.send(arr)
+        res.send(obj)
     } catch (err) {
         console.log(err)
     }
@@ -34,12 +34,24 @@ app.get('/stats', async(req, res) => {
 
 //Connects to MongoDB and returns the data from the 'stats' collection. Refreshed only once per lifecycle
 async function getStats() {
+    let base = Object()
+
     await client.connect()
     const db = client.db('flairChangeBot').collection('stats')
 
-    let arr = await db.find().toArray()
+    await db.find().forEach(el => {
+        if (el.flair == 'null') el.flair = 'Unflaired'
+        base[el.flair] = el.num
+    })
 
     client.close()
 
-    return arr
+    const res = Object.keys(base).sort().reduce(
+        (obj, key) => {
+            obj[key] = base[key];
+            return obj;
+        }, {}
+    )
+
+    return res
 }
