@@ -1,0 +1,31 @@
+{
+  "name": "flairchange_bot-api",
+  "version": "1.0.0",
+  "description": "An API returning data gathered and processed by flairchange_bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ornato-t/flairchange_bot-api.git"
+  },
+  "keywords": [
+    "Reddit",
+    "Reddit",
+    "bot",
+    "Reddit",
+    "API"
+  ],
+  "author": "ornato-t",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/ornato-t/flairchange_bot-api/issues"
+  },
+  "homepage": "https://github.com/ornato-t/flairchange_bot-api#readme",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "mongodb": "^4.7.0"
+  }
+}
