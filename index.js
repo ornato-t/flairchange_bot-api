@@ -17,16 +17,33 @@ run()
 async function run() {
     obj = await getStats()
 
-    app.listen(port, () => { //Listener
+    app.listen(port, () => {
         console.log(`Listeing on https://flairchangebot-api.herokuapp.com/:${port}`)
     })
 }
 
-//Handler for GET /stats
-app.get('/stats', async(req, res) => {
+app.get('/stats', (req, res) => {
     try {
         console.log('Answering request for: /stats')
         res.send(obj)
+    } catch (err) {
+        console.log(err)
+    }
+})
+
+app.get('/stats/noAlts', (req, res) => {
+    try {
+        console.log('Answering request for: /stats/noAlts')
+        res.send(noAlts(obj))
+    } catch (err) {
+        console.log(err)
+    }
+})
+
+app.get('/stats/filter/noAlts', (req, res) => {
+    try {
+        console.log('Answering request for: /stats/filter/noAlts')
+        res.send(noAlts(filter()))
     } catch (err) {
         console.log(err)
     }
@@ -54,4 +71,46 @@ async function getStats() {
     )
 
     return res
+}
+
+//Filters out the newly added 'Chad' flairs, groups those users with the regular ones
+function filter() {
+    let temp = Object()
+    let toRemove = Object()
+    delim = 'Chad '
+
+    for (el of Object.keys(obj)) {
+        if (!el.includes(delim)) {
+            temp[el] = obj[el]
+        } else {
+            orig = el.slice(delim.length)
+            toRemove[orig] = obj[el]
+        }
+    }
+
+    for (el of Object.keys(toRemove)) {
+        temp[el] += toRemove[el]
+    }
+    return temp
+}
+
+//Removes alt flairs (GreyCentrist, PurpleLibright) and groups them with the respective main flair
+function noAlts(src) {
+    alts = {
+        GreyCentrist: 'Centrist',
+        PurpleLibRight: 'LibRight'
+    }
+    temp = Object()
+
+    for (el of Object.keys(src)) {
+        if (!Object.keys(alts).includes(el)) {
+            temp[el] = src[el]
+        }
+    }
+
+    for (el of Object.keys(alts)) {
+        temp[alts[el]] += src[el]
+    }
+
+    return temp
 }
