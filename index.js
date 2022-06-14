@@ -1,5 +1,7 @@
 require('dotenv').config()
 
+const cron = require('node-cron')
+
 const uri = process.env.MONGODB_URI
 const MongoClient = require('mongodb').MongoClient
 const client = new MongoClient(uri)
@@ -14,8 +16,10 @@ let obj
 run()
 
 //Main function
-async function run() {
-    obj = await getStats()
+function run() {
+    cron.schedule('* * * * *', async() => { //Refreshind data every minute
+        obj = await getStats()
+    })
 
     app.listen(port, () => {
         console.log(`Listeing on https://flairchangebot-api.herokuapp.com/:${port}`)
