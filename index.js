@@ -40,6 +40,15 @@ app.get('/stats/noAlts', (req, res) => {
     }
 })
 
+app.get('/stats/filter', (req, res) => {
+    try {
+        console.log('Answering request for: /stats/filter/noAlts')
+        res.send(filter())
+    } catch (err) {
+        console.log(err)
+    }
+})
+
 app.get('/stats/filter/noAlts', (req, res) => {
     try {
         console.log('Answering request for: /stats/filter/noAlts')
