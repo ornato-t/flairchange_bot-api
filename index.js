@@ -17,7 +17,7 @@ run()
 
 //Main function
 function run() {
-    cron.schedule('* * * * *', async() => { //Refreshind data every minute
+    cron.schedule('* * * * *', async() => { //Refreshing data every minute
         obj = await getStats()
     })
 
