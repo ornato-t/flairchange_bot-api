@@ -42,7 +42,7 @@ app.get('/stats/noAlts', (req, res) => {
 
 app.get('/stats/filter', (req, res) => {
     try {
-        console.log('Answering request for: /stats/filter/noAlts')
+        console.log('Answering request for: /stats/filter')
         res.send(filter())
     } catch (err) {
         console.log(err)
