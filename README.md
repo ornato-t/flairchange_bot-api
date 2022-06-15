@@ -1,9 +1,25 @@
 # flairchange_bot-api
 An API aggregating data coming from r/PoliticalCompassMemes, gathered and processed by u/[flairchange_bot](https://github.com/ornato-t/flairchange_bot).
 
-# Endpoint
+# Endpoints
 
 Each endpoint can be accessed by opening the runtime environment linked on the sidebar. The API supports the following endpoints:
+
+## `GET /u/<name>`
+With &lt;name&gt; being a Reddit username.  
+Returns a JSON object containing a user's flair history, including the date of each flair change.  
+Flair change data should be read as follows: user `name` changed their flair from `flair[i-1]` to `flair[i]` on `dateAdded[i]`.  
+Returns a 400 error for a badly formulated request or 404 for a missing entry in the database.
+### Example
+`{`  
+&ensp;`"name": "flairchange_bot",`  
+&ensp;`"flair": [`  
+&emsp;`"AuthCenter"`  
+&ensp;`],`  
+&ensp;`"dateAdded": [`  
+&emsp;`"2022-04-26T22:29:54.489Z"`  
+&ensp;`]`  
+`}`
 
 ## `GET /stats`  
 Returns a JSON object containing the all the flair statistics of r/PoliticalCompassMemes. It is composed of key-value pairs, composed by a flair and the number of users having such flair. This dataset includes the recently added special "chad" flairs.
@@ -44,4 +60,4 @@ Combines the two previously introduced endpoints. Returns the same data as `/sta
 
 
 # Access
-Access to the API is free and open to all. As an anti spam precaution, the data is not loaded from the database on each API call but instead fetched and cached by the app for one minute, after that it gets refreshed. Because of this and other possible latency problems caused by u/[flairchange_bot](https://github.com/ornato-t/flairchange_bot)'s data gathering, the API may prove slow to react to real time flair changes.
+Access to the API is free and open to all. If you are interested in additional endpoints write a Reddit message to u/Nerd02.

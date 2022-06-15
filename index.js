@@ -1,7 +1,5 @@
 require('dotenv').config()
 
-const cron = require('node-cron')
-
 const uri = process.env.MONGODB_URI
 const MongoClient = require('mongodb').MongoClient
 const client = new MongoClient(uri)
@@ -11,88 +9,110 @@ const app = express()
 const port = process.env.PORT || 80
 app.use(express.static('static'))
 
-let obj
+client.connect()
+const db = client.db('flairChangeBot')
 
-run()
 
-//Main function
-function run() {
-    cron.schedule('* * * * *', async() => { //Refreshing data every minute
-        obj = await getStats()
-    })
+app.listen(port, () => {
+    console.log(`Listeing...`, port)
+})
 
-    app.listen(port, () => {
-        console.log(`Listeing on https://flairchangebot-api.herokuapp.com/:${port}`)
-    })
-}
 
-app.get('/stats', (req, res) => {
+app.get('/stats', async(req, res) => {
     try {
         console.log('Answering request for: /stats')
-        res.send(obj)
+        res.send(await getStats())
     } catch (err) {
         console.log(err)
     }
 })
 
-app.get('/stats/noAlts', (req, res) => {
+app.get('/stats/noAlts', async(req, res) => {
     try {
         console.log('Answering request for: /stats/noAlts')
-        res.send(noAlts(obj))
+        res.send(noAlts(await getStats()))
     } catch (err) {
         console.log(err)
     }
 })
 
-app.get('/stats/filter', (req, res) => {
+app.get('/stats/filter', async(req, res) => {
     try {
         console.log('Answering request for: /stats/filter')
-        res.send(filter())
+        res.send(filter(await getStats()))
     } catch (err) {
         console.log(err)
     }
 })
 
-app.get('/stats/filter/noAlts', (req, res) => {
+app.get('/stats/filter/noAlts', async(req, res) => {
     try {
         console.log('Answering request for: /stats/filter/noAlts')
-        res.send(noAlts(filter()))
+        res.send(noAlts(filter(await getStats())))
     } catch (err) {
         console.log(err)
     }
 })
 
-//Connects to MongoDB and returns the data from the 'stats' collection. Refreshed only once per lifecycle
+app.get('/u/:user', async(req, res) => {
+    const regexReddit = /[A-Za-z0-9_-]+/gm //Regex matching a reddit username:A-Z, a-z, 0-9, _, -
+
+    try {
+        user = req.params.user
+        console.log(`Answering request for: ${user}`)
+
+        if (user.match(regexReddit)) {
+            log = await getUser(user)
+            if (log != null) {
+                res.send(log)
+            } else {
+                console.log('\tDBERR: 404')
+                res.statusCode = 404
+                res.send('Error: user not found in the database.')
+            }
+        } else { //Not a Reddit username
+            console.log('\tDBERR: 400')
+            res.statusCode = 400
+            res.send('Error: not a Reddit username.')
+        }
+
+    } catch (err) {
+        console.log(err)
+    }
+})
+
+
+//Returns the data from the 'stats' collection. Refreshed only once per lifecycle
 async function getStats() {
     let base = Object()
 
-    await client.connect()
-    const db = client.db('flairChangeBot').collection('stats')
-
-    await db.find().forEach(el => {
+    await db.collection('stats').find().forEach(el => {
         if (el.flair == 'null') el.flair = 'Unflaired'
         base[el.flair] = el.num
     })
 
-    client.close()
-
     const res = Object.keys(base).sort().reduce(
         (obj, key) => {
-            obj[key] = base[key];
-            return obj;
+            obj[key] = base[key]
+            return obj
         }, {}
     )
 
     return res
 }
 
+//Returns a user's complete database entry: name, flair history, date of each flair change
+async function getUser(user) {
+    return await db.collection('PCM_users').findOne({ name: user }, { projection: { _id: 0, id: 0, optOut: 0 } })
+}
+
 //Filters out the newly added 'Chad' flairs, groups those users with the regular ones
-function filter() {
+function filter(src) {
     let temp = Object()
     let toRemove = Object()
     delim = 'Chad '
 
-    for (el of Object.keys(obj)) {
+    for (el of Object.keys(src)) {
         if (!el.includes(delim)) {
             temp[el] = obj[el]
         } else {
