@@ -3,23 +3,28 @@ An API aggregating data coming from r/PoliticalCompassMemes, gathered and proces
 
 # Endpoints
 
-Each endpoint can be accessed by opening the runtime environment linked on the sidebar. The API supports the following endpoints:
+Each endpoint can be accessed by opening the url linked on the sidebar. The API supports the following endpoints:
 
 ## `GET /u/<name>`
 With &lt;name&gt; being a Reddit username.  
+
 Returns a JSON object containing a user's flair history, including the date of each flair change.  
-Flair change data should be read as follows: user `name` changed their flair from `flair[i-1]` to `flair[i]` on `dateAdded[i]`.  
+Flair change data is stored in the `flairs` array. Each object represents a change: user `name` changed its flair to `flairs[i].flair` on `flairs[i].dateAdded`.
+
 Returns a 400 error for a badly formulated request or 404 for a missing entry in the database.
 ### Example
 `{`  
 &ensp;`"name": "flairchange_bot",`  
-&ensp;`"flair": [`  
-&emsp;`"AuthCenter"`  
-&ensp;`],`  
-&ensp;`"dateAdded": [`  
-&emsp;`"2022-04-26T22:29:54.489Z"`  
-&ensp;`]`  
-`}`
+&ensp;`"flairs": [{`  
+&emsp;`"flair": "AuthCenter",`  
+&emsp;`"dateAdded": 2022-04-26T22:29:54.489Z"`  
+&ensp;`}, {`  
+&emsp;`"flair": "GreyCentrist",`  
+&emsp;`"dateAdded": 2022-06-01T00:00:00.000Z"`  
+&ensp;`}]`  
+`}`  
+
+*Note: this is just an example, flairchange_bot has clearly never changed his flair, as that would make him cringe.*
 
 ## `GET /stats`  
 Returns a JSON object containing the all the flair statistics of r/PoliticalCompassMemes. It is composed of key-value pairs, composed by a flair and the number of users having such flair. This dataset includes the recently added special "chad" flairs.
