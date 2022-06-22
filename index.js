@@ -103,7 +103,7 @@ async function getStats() {
 
 //Returns a user's complete database entry: name, flair history, date of each flair change
 async function getUser(user) {
-    return await db.collection('PCM_users').findOne({ name: user }, { projection: { _id: 0, id: 0, optOut: 0, flair: 0, dateAdded: 0 } })
+    return await db.collection('PCM_users').findOne({ name: { $regex: new RegExp(user, 'i') } }, { projection: { _id: 0, id: 0, optOut: 0, flair: 0, dateAdded: 0 } }) //REGEX makes search case insensitive
 }
 
 //Filters out the newly added 'Chad' flairs, groups those users with the regular ones
