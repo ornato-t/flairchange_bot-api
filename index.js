@@ -66,14 +66,14 @@ app.get('/u/:user', async(req, res) => {
             if (log != null) {
                 res.send(log)
             } else {
-                console.log('\tDBERR: 404')
                 res.statusCode = 404
                 res.send('Error: user not found in the database.')
+                throw '\tDBERR: 404'
             }
         } else { //Not a Reddit username
-            console.log('\tDBERR: 400')
             res.statusCode = 400
             res.send('Error: not a Reddit username.')
+            throw '\tDBERR: 400'
         }
 
     } catch (err) {
@@ -81,6 +81,34 @@ app.get('/u/:user', async(req, res) => {
     }
 })
 
+app.get('/leaderboard', async(req, res) => {
+    try {
+        const defaultVal = 50
+        console.log(`Answering request for: /leaderboard ${defaultVal} entries`)
+        res.send(await getLeaderboard(defaultVal))
+    } catch (err) {
+        console.log(err)
+    }
+})
+
+app.get('/leaderboard/:n', async(req, res) => {
+    try {
+        const defaultVal = 500
+        let n = Math.floor(Number(req.params.n))
+
+        if (n > defaultVal) //Requested num is too big, limit to const
+            n = defaultVal
+        else if (n <= 0) { //Negative or zero param
+            res.statusCode = 400
+            res.send('Error: param should be greater than zero.')
+            throw 'PARAM_ERR: 400'
+        }
+        console.log(`Answering request for: /leaderboard ${n} entries`)
+        res.send(await getLeaderboard(n))
+    } catch (err) {
+        console.log(err)
+    }
+})
 
 //Returns the data from the 'stats' collection. Refreshed only once per lifecycle
 async function getStats() {
@@ -103,26 +131,34 @@ async function getStats() {
 
 //Returns a user's complete database entry: name, flair history, date of each flair change
 async function getUser(user) {
-    return await db.collection('PCM_users').findOne({ name: { $regex: new RegExp(user, 'i') } }, { projection: { _id: 0, id: 0, optOut: 0, flair: 0, dateAdded: 0 } }) //REGEX makes search case insensitive
+    return await db.collection('users').findOne({ name: { $regex: new RegExp(user, 'i') } }, { projection: { _id: 0, id: 0, optOut: 0, flair: 0, dateAdded: 0 } }) //REGEX makes search case insensitive
 }
 
-//Filters out the newly added 'Chad' flairs, groups those users with the regular ones
+//Filters out the newly added 'Chad' flairs and older flairs no longer available, groups those users with the regular ones
 function filter(src) {
-    let temp = Object()
-    let toRemove = Object()
-    delim = 'Chad '
+    let temp = Object(),
+        toRemove = Object(),
+        delim = 'Chad ',
+        centrist = ['Grand Inquisitor', 'Transhumanist'],
+        authcenter = ['Authoritarian']
 
     for (el of Object.keys(src)) {
-        if (!el.includes(delim)) {
-            temp[el] = obj[el]
-        } else {
+        toRemove[el] = 0
+        if (el.includes(delim)) {
             orig = el.slice(delim.length)
-            toRemove[orig] = obj[el]
+            toRemove[orig] += src[el]
+        } else if (centrist.includes(el)) {
+            toRemove['Centrist'] += src[el]
+        } else if (authcenter.includes(el)) {
+            toRemove['AuthCenter'] += src[el]
+        } else {
+            temp[el] = src[el]
         }
     }
 
     for (el of Object.keys(toRemove)) {
-        temp[el] += toRemove[el]
+        if (toRemove[el] > 0)
+            temp[el] += toRemove[el]
     }
     return temp
 }
@@ -146,4 +182,9 @@ function noAlts(src) {
     }
 
     return temp
+}
+
+//Returns n elements from the leaderboard
+async function getLeaderboard(n) {
+    return await db.collection('leaderboard').find({}, { projection: { id: 0 } }).limit(n).toArray()
 }
